@@ -97,14 +97,14 @@
 <div class="container">
     <h1>Kalkulator Diskon</h1>
     <form method="POST">
+        <label for="total">Total Belanja (Rp)</label>
+        <input type="text" id="total" name="total" placeholder="Masukkan total belanja" required>
+
         <label for="member">Status Member</label>
         <select name="member" id="member">
             <option value="yes">Ya</option>
             <option value="no">Tidak</option>
         </select>
-
-        <label for="total">Total Belanja (Rp)</label>
-        <input type="text" id="total" name="total" placeholder="Masukkan total belanja" required>
 
         <button type="submit" name="submit">Hitung Diskon</button>
     </form>
@@ -113,32 +113,42 @@
     if (isset($_POST['submit'])) {
         $is_member = $_POST['member'] === 'yes';
         $total_belanja = floatval($_POST['total']);
+        $potongan_member = 0;
         $diskon = 0;
 
+        // Jika member, beri potongan member 10%
         if ($is_member) {
-            if ($total_belanja > 1000000) {
+            $potongan_member = 10; // 10% potongan member
+            $total_belanja_setelah_potongan = $total_belanja - (($potongan_member / 100) * $total_belanja);
+        } else {
+            $total_belanja_setelah_potongan = $total_belanja; // Tidak ada potongan member
+        }
+
+        // Diskon tambahan berdasarkan total belanja setelah potongan member
+        if ($is_member) {
+            if ($total_belanja_setelah_potongan >= 1000000) {
                 $diskon = 15;
-            } elseif ($total_belanja > 500000) {
+            } elseif ($total_belanja_setelah_potongan >= 500000) {
                 $diskon = 10;
-            } else {
-                $diskon = 10; 
             }
         } else {
-            if ($total_belanja > 1000000) {
+            if ($total_belanja_setelah_potongan >= 1000000) {
                 $diskon = 10;
-            } elseif ($total_belanja > 500000) {
+            } elseif ($total_belanja_setelah_potongan >= 500000) {
                 $diskon = 5;
-            } else {
-                $diskon = 0; 
             }
         }
 
-        $jumlah_diskon = ($diskon / 100) * $total_belanja;
-        $total_bayar = $total_belanja - $jumlah_diskon;
+        // Hitung jumlah diskon dan total bayar
+        $jumlah_diskon = ($diskon / 100) * $total_belanja_setelah_potongan;
+        $total_bayar = $total_belanja_setelah_potongan - $jumlah_diskon;
 
         echo '<div class="result">';
         echo "<h2>Hasil Perhitungan</h2>";
-        echo "<p>Diskon: <strong>$diskon%</strong></p>";
+        if ($is_member) {
+            echo "<p>Potongan Member: <strong>10%</strong></p>";
+        }
+        echo "<p>Diskon Tambahan: <strong>$diskon%</strong></p>";
         echo "<p>Jumlah Diskon: <strong>Rp " . number_format($jumlah_diskon, 0, ',', '.') . "</strong></p>";
         echo "<p>Total Bayar: <strong>Rp " . number_format($total_bayar, 0, ',', '.') . "</strong></p>";
         echo '</div>';
